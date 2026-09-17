@@ -1,0 +1,17 @@
+# main package
+Django==6.0.1 
+djangorestframework==3.16.1 
+Pillow 
+python-decouple 
+
+djangorestframework-simplejwt
+
+django-cors-headers==4.4.0
+# thirty package
+django-filter 
+drf-yasg 
+django-extensions 
+
+python-dotenv
+faker
+
