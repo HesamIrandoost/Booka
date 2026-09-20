@@ -18,16 +18,12 @@ class AuthorAdmin(admin.ModelAdmin):
         "biography",
     )
 
-    list_filter = (
-        "date_born",
-    )
+    list_filter = ("date_born",)
 
 
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-    )
+    list_display = ("name",)
 
     search_fields = (
         "name",
@@ -40,6 +36,7 @@ class BookAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "author",
+        "slug",
         "star",
         "pages",
         "published_date",
@@ -59,9 +56,7 @@ class BookAdmin(admin.ModelAdmin):
         "genres",
     )
 
-    filter_horizontal = (
-        "genres",
-    )
+    filter_horizontal = ("genres",)
 
     readonly_fields = (
         "star",
@@ -94,14 +89,13 @@ class ReviewAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    readonly_fields = (
-        "created_at",
-    )
+    readonly_fields = ("created_at",)
 
 
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
     list_display = (
+        "pk",
         "title",
         "user",
         "created_at",
@@ -116,10 +110,6 @@ class CollectionAdmin(admin.ModelAdmin):
         "books__title",
     )
 
-    filter_horizontal = (
-        "books",
-    )
+    filter_horizontal = ("books",)
 
-    readonly_fields = (
-        "created_at",
-    )
+    readonly_fields = ("created_at",)

@@ -3,15 +3,21 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
 
+
 class Review(models.Model):
-    user = models.ForeignKey("account.User", on_delete=models.CASCADE, related_name="reviews")
-    book = models.ForeignKey('Book', on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(
+        "account.User", on_delete=models.CASCADE, related_name="reviews"
+    )
+    book = models.ForeignKey("Book", on_delete=models.CASCADE, related_name="reviews")
     subject = models.CharField(max_length=50)
     text = models.TextField()
     likes = models.PositiveIntegerField(default=0)
-    parent = models.ForeignKey("self", on_delete=models.CASCADE,
-                               null=True, blank=True, related_name="replies")
-    star = models.IntegerField(default=0, validators=[MaxValueValidator(5), MinValueValidator(0)])
+    parent = models.ForeignKey(
+        "self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies"
+    )
+    star = models.IntegerField(
+        default=0, validators=[MaxValueValidator(5), MinValueValidator(0)]
+    )
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -20,10 +26,12 @@ class Review(models.Model):
 
 
 class Collection(models.Model):
-    user = models.ForeignKey("account.User", on_delete=models.CASCADE, related_name="collections")
+    user = models.ForeignKey(
+        "account.User", on_delete=models.CASCADE, related_name="collections"
+    )
     books = models.ManyToManyField("Book", related_name="collections", blank=True)
     title = models.CharField(max_length=150)
-    cover = models.ImageField(upload_to='collections/covers/', blank=True, null=True)
+    cover = models.ImageField(upload_to="collections/covers/", blank=True, null=True)
     description = models.TextField(default="My Collection", blank=True, null=True)
     is_public = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

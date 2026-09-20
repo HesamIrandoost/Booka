@@ -7,7 +7,6 @@ from django.contrib.auth import get_user_model
 
 from book.models import Author, Book, Genre, Review, Collection
 
-
 fake = Faker()
 
 
@@ -44,62 +43,27 @@ class Command(BaseCommand):
 
             users.append(user)
 
-        self.stdout.write(
-            self.style.SUCCESS("20 users created.")
-        )
+        self.stdout.write(self.style.SUCCESS("20 users created."))
 
         # ==========================================================
         # Genres
         # ==========================================================
 
         genre_data = [
-            (
-                "Fantasy",
-                "Fantasy and magical stories."
-            ),
-            (
-                "Science Fiction",
-                "Stories about science, technology and the future."
-            ),
-            (
-                "Mystery",
-                "Stories centered around solving mysterious events."
-            ),
-            (
-                "Thriller",
-                "Suspenseful and exciting stories."
-            ),
-            (
-                "Romance",
-                "Stories focused on romantic relationships."
-            ),
-            (
-                "Historical Fiction",
-                "Fictional stories set in historical periods."
-            ),
-            (
-                "Horror",
-                "Stories designed to create fear and suspense."
-            ),
-            (
-                "Adventure",
-                "Stories involving exploration and exciting journeys."
-            ),
-            (
-                "Classic",
-                "Important and influential works of literature."
-            ),
-            (
-                "Dystopian",
-                "Stories about oppressive or imagined future societies."
-            ),
-            (
-                "Philosophy",
-                "Books dealing with philosophical questions and ideas."
-            ),
+            ("Fantasy", "Fantasy and magical stories."),
+            ("Science Fiction", "Stories about science, technology and the future."),
+            ("Mystery", "Stories centered around solving mysterious events."),
+            ("Thriller", "Suspenseful and exciting stories."),
+            ("Romance", "Stories focused on romantic relationships."),
+            ("Historical Fiction", "Fictional stories set in historical periods."),
+            ("Horror", "Stories designed to create fear and suspense."),
+            ("Adventure", "Stories involving exploration and exciting journeys."),
+            ("Classic", "Important and influential works of literature."),
+            ("Dystopian", "Stories about oppressive or imagined future societies."),
+            ("Philosophy", "Books dealing with philosophical questions and ideas."),
             (
                 "Young Adult",
-                "Literature primarily written for teenage and young adult readers."
+                "Literature primarily written for teenage and young adult readers.",
             ),
         ]
 
@@ -113,9 +77,7 @@ class Command(BaseCommand):
 
             genres[name] = genre
 
-        self.stdout.write(
-            self.style.SUCCESS("Genres created.")
-        )
+        self.stdout.write(self.style.SUCCESS("Genres created."))
 
         # ==========================================================
         # Authors + Books
@@ -380,9 +342,7 @@ class Command(BaseCommand):
                 first_name=author_data["first_name"],
                 last_name=author_data["last_name"],
                 defaults={
-                    "biography": fake.paragraph(
-                        nb_sentences=10
-                    ),
+                    "biography": fake.paragraph(nb_sentences=10),
                     "date_born": author_data["date_born"],
                     "place_born": author_data["place_born"],
                     "website": f"https://{fake.domain_name()}",
@@ -394,28 +354,20 @@ class Command(BaseCommand):
             book = Book.objects.create(
                 author=author,
                 title=data["title"],
-                about=fake.paragraph(
-                    nb_sentences=5
-                ),
-                summary=fake.paragraph(
-                    nb_sentences=8
-                ),
+                about=fake.paragraph(nb_sentences=5),
+                summary=fake.paragraph(nb_sentences=8),
                 pages=data["pages"],
                 publisher=data["publisher"],
                 published_date=data["published_date"],
             )
 
-            book.genres.set(
-                genres[genre]
-                for genre in data["genres"]
-            )
+            book.genres.set(genres[genre] for genre in data["genres"])
 
             books.append(book)
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"{len(authors)} authors and "
-                f"{len(books)} books created."
+                f"{len(authors)} authors and " f"{len(books)} books created."
             )
         )
 
@@ -485,10 +437,7 @@ class Command(BaseCommand):
 
         replies = []
 
-        for review in random.sample(
-            reviews,
-            k=int(len(reviews) * 0.3)
-        ):
+        for review in random.sample(reviews, k=int(len(reviews) * 0.3)):
 
             reply = Review.objects.create(
                 user=random.choice(users),
@@ -505,8 +454,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"{len(reviews)} reviews and "
-                f"{len(replies)} replies created."
+                f"{len(reviews)} reviews and " f"{len(replies)} replies created."
             )
         )
 
@@ -517,11 +465,7 @@ class Command(BaseCommand):
         for book in books:
             book.update_star()
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                "Book ratings calculated."
-            )
-        )
+        self.stdout.write(self.style.SUCCESS("Book ratings calculated."))
 
         # ==========================================================
         # Collections
@@ -547,30 +491,18 @@ class Command(BaseCommand):
                 collection = Collection.objects.create(
                     user=user,
                     title=random.choice(collection_names),
-                    description=fake.paragraph(
-                        nb_sentences=3
-                    ),
-                    is_public=random.choice(
-                        [True, True, True, False]
-                    ),
+                    description=fake.paragraph(nb_sentences=3),
+                    is_public=random.choice([True, True, True, False]),
                 )
 
                 collection.books.set(
-                    random.sample(
-                        books,
-                        random.randint(
-                            3,
-                            min(8, len(books))
-                        )
-                    )
+                    random.sample(books, random.randint(3, min(8, len(books))))
                 )
 
                 collections.append(collection)
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"{len(collections)} collections created."
-            )
+            self.style.SUCCESS(f"{len(collections)} collections created.")
         )
 
         # ==========================================================
@@ -578,7 +510,5 @@ class Command(BaseCommand):
         # ==========================================================
 
         self.stdout.write(
-            self.style.SUCCESS(
-                "\nBookIMDb database seeded successfully!"
-            )
+            self.style.SUCCESS("\nBookIMDb database seeded successfully!")
         )
