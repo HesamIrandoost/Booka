@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "book.apps.BookConfig",
     # 'articles.apps.ArticlesConfig',
     "django_extensions",
+    "django_filters",
 ]
 
 REST_FRAMEWORK = {
@@ -60,7 +61,7 @@ REST_FRAMEWORK = {
     # ],
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",  # فقط JSON برگردونه
-        # "rest_framework.renderers.BrowsableAPIRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
     ],
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",

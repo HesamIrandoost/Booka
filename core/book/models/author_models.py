@@ -25,7 +25,7 @@ class Author(models.Model):
         if not self.slug:
             fslug = slugify(self.first_name)
             lslug = slugify(self.last_name)
-            flslug = f"{fslug} {lslug}"
+            flslug = f"{fslug} {lslug} {self.pk}"
             self.slug = slugify(flslug)
         super().save(*args, **kwargs)
 

@@ -19,11 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = [
-            "pk",
-            "name",
-            "description",
-        ]
+        fields = ["pk", "name", "description", "slug"]
 
 
 class AuthorSerializer(serializers.ModelSerializer):

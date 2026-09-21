@@ -42,6 +42,13 @@ class Book(models.Model):
 class Genre(models.Model):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=250, blank=True, null=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            slug = slugify(self.name)
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
