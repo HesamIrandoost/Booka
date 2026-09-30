@@ -25,6 +25,26 @@ class Review(models.Model):
         return f"{self.subject[:10]}"
 
 
+class ReviewLike(models.Model):
+    user = models.ForeignKey(
+        "account.User", on_delete=models.CASCADE, related_name="review_likes"
+    )
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name="review_likes"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "review"], name="unique_review_like"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user_id} likes {self.review_id}"
+
+
 class Collection(models.Model):
     user = models.ForeignKey(
         "account.User", on_delete=models.CASCADE, related_name="collections"

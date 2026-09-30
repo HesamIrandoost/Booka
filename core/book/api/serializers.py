@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from account.models import User
-from book.models import Author, Book, Collection, Genre, Review
+from book.models import Author, Book, Collection, Genre, Review, ReviewLike
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -61,6 +61,81 @@ class ReviewSerializer(serializers.ModelSerializer):
             "book",
             "likes",
             "parent",
+            "status",
+            "created_at",
+        ]
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    liked_by_me = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Review
+        fields = [
+            "id",
+            "user",
+            "book",
+            "subject",
+            "text",
+            "likes",
+            "parent",
+            "star",
+            "status",
+            "created_at",
+            "liked_by_me",
+        ]
+        read_only_fields = [
+            "id",
+            "user",
+            "book",
+            "likes",
+            "parent",
+            "status",
+            "created_at",
+        ]
+
+    def get_liked_by_me(self, obj):
+        request = self.context.get("request")
+
+        if not request or not request.user.is_authenticated:
+            return False
+
+        cache = self.context.setdefault("_liked_ids", {})
+
+        if obj.book_id not in cache:
+            cache[obj.book_id] = set(
+                ReviewLike.objects.filter(
+                    user=request.user, review__book_id=obj.book_id
+                ).values_list("review_id", flat=True)
+            )
+
+        return obj.pk in cache[obj.book_id]
+
+
+class ReviewReplySerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Review
+        fields = [
+            "id",
+            "user",
+            "book",
+            "parent",
+            "text",
+            "likes",
+            "star",
+            "status",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "user",
+            "book",
+            "parent",
+            "likes",
+            "star",
             "status",
             "created_at",
         ]
@@ -136,3 +211,12 @@ class CollectionSerializer(serializers.ModelSerializer):
             "books",
             "created_at",
         ]
+
+
+# test
+class RecentReviewSerializer(ReviewSerializer):
+    book_title = serializers.CharField(source="book.title", read_only=True)
+    book_slug = serializers.CharField(source="book.slug", read_only=True)
+
+    class Meta(ReviewSerializer.Meta):
+        fields = ReviewSerializer.Meta.fields + ["book_title", "book_slug"]

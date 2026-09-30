@@ -33,3 +33,9 @@ class UserSerializer(serializers.ModelSerializer):
             "full_name",
             "avatar",
         ]
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "avatar"]

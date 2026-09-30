@@ -7,6 +7,7 @@ from .views import (
     MeAPIView,
 )
 
+# root = /api/auth/
 urlpatterns = [
     path("register/", RegisterAPIView.as_view()),
     path("login/", LoginAPIView.as_view()),

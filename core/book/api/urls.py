@@ -49,4 +49,13 @@ urlpatterns = [
         views.RemoveBookFromCollectionView.as_view(),
         name="collection-remove-book",
     ),
+    # test
+    path(
+        "reviews/recent/", views.RecentReviewListView.as_view(), name="reviews-recent"
+    ),
+    path(
+        "reviews/<int:pk>/like/",
+        views.ReviewLikeToggleView.as_view(),
+        name="review-like",
+    ),
 ]

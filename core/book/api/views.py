@@ -1,12 +1,17 @@
-from django.shortcuts import get_object_or_404
-
+# views.py
 from rest_framework import generics, permissions
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter, OrderingFilter
-from django_filters.rest_framework import DjangoFilterBackend
 
-from book.models import Author, Book, Collection, Genre, Review
+from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.db.models import F, Value, Q\
+from django.db.models.functions import Greatest
+
+from book.models import Author, Book, Collection, Genre, Review, ReviewLike
 
 from .filters import BookFilter
 from .pagination import BookPagination
@@ -17,6 +22,7 @@ from .serializers import (
     DetailBooksSerializer,
     GenreSerializer,
     ReviewSerializer,
+    ReviewReplySerializer,  
 )
 from .alternate_serializers import AuthorDetailSerializer, GenreDetailSerializer
 
@@ -62,7 +68,6 @@ class DetailBookView(generics.RetrieveAPIView):
 # Reviews
 # =========================================================
 
-
 class ReviewListCreateView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
 
@@ -71,7 +76,6 @@ class ReviewListCreateView(generics.ListCreateAPIView):
             Review.objects.filter(
                 book__slug=self.kwargs["slug"],
                 status=True,
-                # parent__isnull=True,
             )
             .select_related("user", "book")
             .prefetch_related("replies__user")
@@ -84,35 +88,59 @@ class ReviewListCreateView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        book = get_object_or_404(
-            Book,
-            slug=self.kwargs["slug"],
-        )
+        book = get_object_or_404(Book, slug=self.kwargs["slug"])
+        star = serializer.validated_data.get("star", 0)
 
-        serializer.save(
-            user=self.request.user,
-            book=book,
-        )
+        if not 1 <= star <= 5:
+            raise ValidationError({"star": ["Choose a rating from 1 to 5."]})
 
+        if Review.objects.filter(
+            user=self.request.user, book=book, parent__isnull=True
+        ).exists():
+            raise ValidationError({"detail": "You have already reviewed this book."})
 
+        serializer.save(user=self.request.user, book=book)
+        book.update_star()
 class ReviewReplyCreateView(generics.CreateAPIView):
-    serializer_class = ReviewSerializer
+    serializer_class = ReviewReplySerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        review = get_object_or_404(
-            Review,
-            pk=self.kwargs["pk"],
-            status=True,
-        )
+        review = get_object_or_404(Review, pk=self.kwargs["pk"], status=True)
+        parent = review.parent or review
 
         serializer.save(
             user=self.request.user,
-            book=review.book,
-            parent=review,
+            book=parent.book,
+            parent=parent,
+            subject="Reply",
         )
+class ReviewLikeToggleView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
+    def post(self, request, pk):
+        review = get_object_or_404(Review, pk=pk, status=True)
 
+        if review.user_id == request.user.id:
+            raise ValidationError({"detail": "You can't like your own review."})
+
+        with transaction.atomic():
+            like, created = ReviewLike.objects.get_or_create(
+                user=request.user, review=review
+            )
+
+            if created:
+                Review.objects.filter(pk=review.pk).update(likes=F("likes") + 1)
+            else:
+                like.delete()
+                Review.objects.filter(pk=review.pk).update(
+                    likes=Greatest(F("likes") - 1, Value(0))
+                )
+
+        review.refresh_from_db(fields=["likes"])
+
+        return Response({"liked": created, "likes": review.likes})
+    
 # =========================================================
 # Authors
 # =========================================================
@@ -192,7 +220,8 @@ class CollectionListView(generics.ListCreateAPIView):
         "books__author__last_name",
         "user__username",
     ]
-    ordering_fields = ["slug", "title", "created_at"]
+    ordering_fields = ["title", "created_at"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         return (
@@ -328,3 +357,19 @@ class RemoveBookFromCollectionView(APIView):
 
         collection.books.remove(book)
         return Response({"detail": "Book removed from collection."})
+
+
+
+# test
+from .serializers import RecentReviewSerializer
+class RecentReviewListView(generics.ListAPIView):
+    serializer_class = RecentReviewSerializer
+    permission_classes = [permissions.AllowAny]
+    pagination_class = None
+
+    def get_queryset(self):
+        return (
+            Review.objects.filter(status=True, parent__isnull=True)
+            .select_related("user", "book")
+            .order_by("-created_at")[:6]
+        )
