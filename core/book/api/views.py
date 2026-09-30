@@ -8,7 +8,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from django.db.models import F, Value, Q\
+from django.db.models import F, Value, Q
 from django.db.models.functions import Greatest
 
 from book.models import Author, Book, Collection, Genre, Review, ReviewLike
@@ -22,7 +22,7 @@ from .serializers import (
     DetailBooksSerializer,
     GenreSerializer,
     ReviewSerializer,
-    ReviewReplySerializer,  
+    ReviewReplySerializer,
 )
 from .alternate_serializers import AuthorDetailSerializer, GenreDetailSerializer
 
@@ -68,6 +68,7 @@ class DetailBookView(generics.RetrieveAPIView):
 # Reviews
 # =========================================================
 
+
 class ReviewListCreateView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
 
@@ -101,6 +102,8 @@ class ReviewListCreateView(generics.ListCreateAPIView):
 
         serializer.save(user=self.request.user, book=book)
         book.update_star()
+
+
 class ReviewReplyCreateView(generics.CreateAPIView):
     serializer_class = ReviewReplySerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -115,6 +118,8 @@ class ReviewReplyCreateView(generics.CreateAPIView):
             parent=parent,
             subject="Reply",
         )
+
+
 class ReviewLikeToggleView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -140,7 +145,8 @@ class ReviewLikeToggleView(APIView):
         review.refresh_from_db(fields=["likes"])
 
         return Response({"liked": created, "likes": review.likes})
-    
+
+
 # =========================================================
 # Authors
 # =========================================================
@@ -359,9 +365,10 @@ class RemoveBookFromCollectionView(APIView):
         return Response({"detail": "Book removed from collection."})
 
 
-
 # test
 from .serializers import RecentReviewSerializer
+
+
 class RecentReviewListView(generics.ListAPIView):
     serializer_class = RecentReviewSerializer
     permission_classes = [permissions.AllowAny]
