@@ -15,3 +15,12 @@ django-extensions
 python-dotenv
 faker
 
+pytest
+pytest-django
+factory-boy
+
+celery
+redis
+django-redis
+psycopg[binary]
+python-decouple

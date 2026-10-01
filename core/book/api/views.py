@@ -12,6 +12,7 @@ from django.db.models import F, Value, Q
 from django.db.models.functions import Greatest
 
 from book.models import Author, Book, Collection, Genre, Review, ReviewLike
+from book.tasks import send_review_notification
 
 from .filters import BookFilter
 from .pagination import BookPagination
@@ -100,7 +101,13 @@ class ReviewListCreateView(generics.ListCreateAPIView):
         ).exists():
             raise ValidationError({"detail": "You have already reviewed this book."})
 
-        serializer.save(user=self.request.user, book=book)
+        review = serializer.save(user=self.request.user, book=book)
+                
+        send_review_notification.delay(
+            self.request.user.id,
+            review.book.title,
+        )
+        
         book.update_star()
 
 
